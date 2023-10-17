@@ -65,7 +65,12 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
           .ref()
           .child('user_images')
           .child('${user!.uid}.jpg');
-      await putFile(storageRef);
+      // await putFile(storageRef);
+      await storageRef
+          .putFile(_pickedImageFile!)
+          .timeout(const Duration(seconds: 30), onTimeout: () {
+        throw CustomTimedOutException('File Upload request timed out');
+      });
       imageUrl = await storageRef.getDownloadURL();
     } catch (e) {
       print("Error here $e");
