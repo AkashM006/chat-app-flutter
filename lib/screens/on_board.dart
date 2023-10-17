@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chat_app/utils/custom_timedout_exception.dart';
 import 'package:chat_app/widgets/onBoarding/on_board_image_picker.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -48,6 +49,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
     }
   }
 
+  Future<TaskSnapshot> putFile(Reference storageRef) async {
+    return storageRef
+        .putFile(_pickedImageFile!)
+        .timeout(const Duration(seconds: 30), onTimeout: () {
+      throw CustomTimedOutException('File Upload request timed out');
+    });
+  }
+
   Future<String?> _uploadImage() async {
     String? imageUrl;
     try {
@@ -56,9 +65,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
           .ref()
           .child('user_images')
           .child('${user!.uid}.jpg');
-      await storageRef.putFile(_pickedImageFile!);
+      await putFile(storageRef);
       imageUrl = await storageRef.getDownloadURL();
     } catch (e) {
+      print("Error here $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -66,14 +76,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
             content: Text(
               'Something went wrong when trying to upload your photo, but you can set it later once logged in',
             ),
+            duration: Duration(seconds: 10),
           ),
         );
       }
-    }
-    if (context.mounted) {
-      setState(() {
-        _isLoading = false;
-      });
     }
     return imageUrl;
   }
