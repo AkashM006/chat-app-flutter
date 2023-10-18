@@ -36,8 +36,6 @@ class ChatMessages extends StatelessWidget {
 
         final loadedMessages = snapshot.data!.docs;
 
-        print("Loaded Messages ${loadedMessages.length}");
-
         return ListView.builder(
           padding: const EdgeInsets.only(
             bottom: 40,
@@ -66,7 +64,7 @@ class ChatMessages extends StatelessWidget {
 
             return MessageBubble.first(
               userImage: chatMessage['userImg'],
-              username: chatMessage['username'],
+              username: chatMessage['userName'],
               message: chatMessage['text'],
               isMe: authenticatedUser.uid == currentMessageUserId,
             );
